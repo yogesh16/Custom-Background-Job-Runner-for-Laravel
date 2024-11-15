@@ -26,7 +26,7 @@ function runBackgroundJob($class, $method, array $parameters = [], $priority = 1
     ]);
 
     // Run the job runner command in the background
-    $command = 'php ' . base_path('artisan') . ' app:custom-job-runner';
+    $command = 'php ' . base_path('artisan') . ' app:custom-job-runner >> ' . storage_path('logs/background_jobs.log') . ' 2>> ' . storage_path('logs/background_jobs_errors.log') . ' &';
 
     if (strncasecmp(PHP_OS, 'WIN', 3) == 0) {
         pclose(popen("start /B {$command}", "r"));

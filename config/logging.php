@@ -55,7 +55,7 @@ return [
         'background_jobs' => [
             'driver' => 'single',
             'path' => storage_path('logs/background_jobs.log'),
-            'level' => 'error',
+            'level' => 'debug',
         ],
         
         'background_jobs_errors' => [
