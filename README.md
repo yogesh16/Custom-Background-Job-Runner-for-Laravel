@@ -1,66 +1,129 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Custom Background Job Runner for Laravel
 
-## About Laravel
+This project provides a custom job runner for Laravel applications that runs jobs independently from Laravel's built-in queue system. It features job scheduling, execution, error handling, retries, and logging.
+## Table of Contents
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [Features](#features)
+- [Setup](#setup)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Log Files](#log-files)
+- [Dashboard](#dashboard)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Run Jobs Independently**: Execute PHP classes and methods as background jobs, independently of Laravel's default queue system.
+- **Cross-Platform Support**: Compatible with both Windows and Unix-based systems.
+- **Error Handling**: Captures errors during job execution and logs them.
+- **Retry Mechanism**: Configurable retry attempts for failed jobs.
+- **Logging**: Logs all job executions, including job status (running, completed, failed).
+- **Job Delay and Priority**: Ability to delay job execution and set job priority.
+- **Dashboard**: Web-based dashboard to monitor and manage jobs.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Setup
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Clone the project
 
-## Laravel Sponsors
+```bash
+  git clone git@github.com:yogesh16/Custom-Background-Job-Runner-for-Laravel.git
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Go to the project directory
 
-### Premium Partners
+```bash
+  cd Custom-Background-Job-Runner-for-Laravel
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Install dependencies
 
-## Contributing
+```bash
+  composer install
+```
+if you are using yarn
+```bash
+  yarn && yarn run build
+```
+if you are using npm
+```bash
+  npm install && npm run build
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+To continuously run the job runner in the background, Need to set up Laravel’s `schedule:run` command to execute every minute.
+  
+- Open your server’s crontab editor:
+```bash
+crontab -e
+```
+- Add the following cron job to run Laravel’s schedule:run command every minute
+```bash
+* * * * * cd /Custom-Background-Job-Runner-for-Laravel && php artisan schedule:run >> /dev/null 2>&1
 
-## Code of Conduct
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
+Start the server
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+  php artisan serve
+```
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Configuration
+
+You can configure background job-runner in config/background_jobs.php file.
+
+- **approved_classes**: These are list of allowed classed to run using custom background jobs. If you create a new background job class, do not forget to add it here.
+
+- **max_retries**: Max retries of a job, default is set to **3**
+## Usage
+
+To run a background job, call runBackgroundJob() with the class name, method, and optional parameters.
+
+```php
+runBackgroundJob(\App\Jobs\ExampleJob::class, 'execute', ['param1' => 'value1', 'param2' => 'value2']);
+```
+
+You can also pass following optional parameters to runBackgroundJob() function
+
+- **Priority**: pass integer number as per your required priority, and job runner will execute jobs based on provided priority
+
+  **Note: default priority is : 1**
+
+```php
+runBackgroundJob(\App\Jobs\ExampleJob::class, 'execute', ['param1' => 'value1', 'param2' => 'value2'], 2);
+```
+
+- **Delay**: pass number of seconds (integer), to delay execution of a job.
+
+For example if you want to run a job after 5min.
+```php
+runBackgroundJob(\App\Jobs\ExampleJob::class, 'execute', ['param1' => 'value1', 'param2' => 'value2'], 2, 300);
+```
+## Log Files
+
+Two log files are created in storage/logs to capture job execution details:
+
+- **Job Execution Log** (background_jobs.log): Logs each job's class, method, execution time, and status.
+
+```yaml
+[2024-11-15 05:54:15] local.INFO: Job 5 running, Class: App\CustomJobs\ExampleJob, Method: execute  
+[2024-11-15 05:54:15] local.INFO: Job 5 completed.
+
+```
+
+- **Error Log** (background_jobs_errors.log): Captures any exceptions or errors encountered during job execution.
+
+```yaml
+[2023-11-13 12:01:00] Job 8 failed: Class not found
+```
+## Dashboard
+
+Dashboard to monitor jobs
+
+Goto following url to see Dashboard
+```bash
+{localhost}/jobs
+```
