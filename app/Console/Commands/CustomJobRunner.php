@@ -34,6 +34,7 @@ class CustomJobRunner extends Command
             return;
 
         $job->update(['status', 'running']);
+        Log::channel('background_jobs')->info("Job {$job->id} running, Class: {$job->class}, Method: {$job->method}");
 
         try {
             $class = app()->make($job->class);
@@ -41,13 +42,15 @@ class CustomJobRunner extends Command
             $parameters = json_decode($job->parameters, true);
 
             if (!method_exists($class, $method)) {
+                Log::channel('background_jobs_errors')->error("Job {$job->id} failed: {$method} does not exist on {$class}");
                 throw new \Exception("Method {$method} does not exist on {$class}");
             }
 
             $class->$method(...$parameters);
             $job->update(['status' => 'completed', 'completed_at' => now()]);
+            Log::channel('background_jobs')->info("Job {$job->id} completed.");
         } catch (\Exception $e) {
-            Log::error('[CustomJobRunner]', [$e->getMessage()]);
+            Log::channel('background_jobs_errors')->error("Job {$job->id} failed: " . $e->getMessage());
         }
             
     }
