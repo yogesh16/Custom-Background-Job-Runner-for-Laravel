@@ -1,7 +1,9 @@
 <?php
 
+use App\CustomJobs\ExampleJob;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    runBackgroundJob(ExampleJob::class, 'execute', ['Param-1']);
+    //return view('welcome');
 });
