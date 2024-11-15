@@ -28,6 +28,11 @@ class CustomJobRunner extends Command
     public function handle()
     {
         $job = BackgroundJob::where('status', 'pending')
+            ->where(function ($query) {
+                $query->whereNull('scheduled_at')
+                    ->orWhere('scheduled_at', '<=', now());
+            })
+            ->orderBy('priority', 'desc')
             ->first();
 
         if(empty($job))
@@ -51,6 +56,15 @@ class CustomJobRunner extends Command
             Log::channel('background_jobs')->info("Job {$job->id} completed.");
         } catch (\Exception $e) {
             Log::channel('background_jobs_errors')->error("Job {$job->id} failed: " . $e->getMessage());
+
+            if ($job->retry_count < config('background_jobs.max_retries', 3)) {
+                $job->increment('retry_count');
+                $job->update(['status' => 'pending']);
+                Log::channel('background_jobs')->info("Job {$job->id} retrying.");
+            } else {
+                Log::channel('background_jobs')->info("Job {$job->id} failed.");
+                $job->update(['status' => 'failed']);
+            }
         }
             
     }

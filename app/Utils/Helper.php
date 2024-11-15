@@ -2,8 +2,14 @@
 
 use App\Models\BackgroundJob;
 
-function runBackgroundJob($class, $method, array $parameters = [])
+function runBackgroundJob($class, $method, array $parameters = [], $priority = 1, $delay = 0)
 {
+    // Ensure only approved classes can be run
+    $approvedClasses = config('background_jobs.approved_classes', []);
+    if (!in_array($class, $approvedClasses)) {
+        throw new \Exception("Unauthorized class {$class}");
+    }
+    
     // Validate class and method
     if (!class_exists($class) || !method_exists($class, $method)) {
         throw new \Exception("Invalid class or method");
@@ -15,6 +21,8 @@ function runBackgroundJob($class, $method, array $parameters = [])
         'method' => $method,
         'parameters' => json_encode($parameters),
         'status' => 'pending',
+        'priority' => $priority,
+        'scheduled_at' => $delay ? now()->addSeconds($delay) : null,
     ]);
 
     // Run the job runner command in the background
